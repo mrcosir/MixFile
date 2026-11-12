@@ -154,8 +154,10 @@ fun seriesContent(group: SeriesGroup): SeriesContent {
             episodes[item.episode] = log
         }
     }
-    val upper = if (group.total > 0) group.total else (episodes.keys.maxOrNull() ?: 0)
-    val missing = (1..upper).filter { !episodes.containsKey(it) }
+    // 没设总集数时不去猜「缺哪几集」—— 只传了 E07/E09 却被报一堆「缺」会很吵，
+    // 用户在手长按组头填上总集数后才开始算缺集。
+    val missing =
+        if (group.total > 0) (1..group.total).filter { !episodes.containsKey(it) } else emptyList()
     return SeriesContent(group, episodes, missing)
 }
 
