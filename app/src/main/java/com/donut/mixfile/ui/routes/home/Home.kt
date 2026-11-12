@@ -39,6 +39,7 @@ import com.donut.mixfile.util.copyToClipboard
 import com.donut.mixfile.util.file.FileCardList
 import com.donut.mixfile.util.file.deleteUploadLog
 import com.donut.mixfile.util.file.selectAndUploadFile
+import com.donut.mixfile.util.file.seriesGroupEnabled
 import com.donut.mixfile.util.file.showFileInfoDialog
 import com.donut.mixfile.util.file.showFileList
 import com.donut.mixfile.util.file.uploadLogs
@@ -138,18 +139,14 @@ val Home = MixNavPage(
         ElevatedCard(
             modifier = Modifier.fillMaxSize(),
         ) {
-            Text(
-                text = "上传历史",
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(10.dp),
-                fontSize = 18.sp,
-                fontWeight = FontWeight.Bold,
-                color = colorScheme.primary
-            )
+            SeriesHistoryHeader()
             HorizontalDivider()
-            FileCardList(cardList = uploadLogs.asReversed()) {
-                deleteUploadLog(it)
+            if (seriesGroupEnabled) {
+                SeriesGroupedHistory()
+            } else {
+                FileCardList(cardList = uploadLogs.asReversed()) {
+                    deleteUploadLog(it)
+                }
             }
         }
     }

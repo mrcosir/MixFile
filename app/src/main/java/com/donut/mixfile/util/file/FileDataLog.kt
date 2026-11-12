@@ -119,6 +119,7 @@ fun addUploadLog(shareInfo: MixShareInfo) {
         uploadLogs = uploadLogs.drop(1)
     }
     uploadLogs = uploadLogs + uploadLog
+    autoAssignSeriesWithHint(uploadLog)
 }
 
 

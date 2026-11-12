@@ -1,0 +1,56 @@
+name: Build MixFile APK
+
+on:
+  push:
+    branches: [ master ]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - name: Prepare Android SDK
+        run: |
+          echo "ANDROID_HOME=$ANDROID_HOME"
+          echo "sdk.dir=$ANDROID_HOME" > local.properties
+          SDKMAN="$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager"
+          (yes | "$SDKMAN" --licenses > /dev/null 2>&1) || true
+          "$SDKMAN" --install "platforms;android-36" "build-tools;36.0.0" > /dev/null 2>&1 || true
+          "$SDKMAN" --install "platform-tools" > /dev/null 2>&1 || true
+
+      - name: Build release APK
+        run: |
+          chmod +x ./gradlew
+          ./gradlew :app:assembleRelease --no-daemon --stacktrace
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: MixFile-apk
+          path: app/build/outputs/apk/**/*.apk
+          if-no-files-found: warn
+
+      - name: Publish release
+        if: github.ref == 'refs/heads/master'
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: build-${{ github.run_number }}
+          name: MixFile 自定义版 build ${{ github.run_number }}
+          body: |
+            自动云构建产物（剧集分组版）
+            - 提交: ${{ github.sha }}
+            - 触发: ${{ github.event_name }}
+          files: app/build/outputs/apk/release/*.apk
+          fail_on_unmatched_files: false
